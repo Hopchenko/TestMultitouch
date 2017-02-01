@@ -1,0 +1,14 @@
+{
+  "name": "prototype-touch",
+  "version": "1.0.0",
+  "description": "touch testing app ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Hopchenki Oleksii",
+  "license": "ISC",
+  "dependencies": {
+    "pixi.js": "^4.3.4"
+  }
+}
