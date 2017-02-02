@@ -1,171 +1,182 @@
-new Clipboard('.btn');
+(function () {
+	'use strict';
+	//screen sizes
+	var pageWidth = 0;
+	var pageHeight = 0;
+	var screenWidth = 0;
+	var screenHeight = 0;
 
-//declare global variables
-var pageWidth = 0,
-	pageHeight = 0,
-	screenHeight = 0,
-	screenWidth = 0,
-	canvas = null,
-	app = null,
-	fps = 0,
-	basicText = '',
-	touches = [],
-	screenFps = 0,
-	lastLoop = null,
-	thisLoop = null,
-	color = '',
-	i = 0,
-	touchesCount = 0,
-	screenTouchesCount,
-	graphics = new PIXI.Graphics(),
-	clipboardBar = null,
-	currentDate,
-	logData,
-	statistic,
-	data = [];
+	//Variables
+	var app;
+	var canvas;
+	var graphics;
+	var touches = [];
+	var color = 0xffffff;
+	var self;
 
+	//variables for fps counting
+	var fps;
+	var lastLoop;
+	var thisLoop;
+	//varibles for displaying stats on screen
+	var fpsOnScreen;
+	var amountOfTouchesOnScreen;
+	//technical variables
+	var i, j, k;
+	i = j = k = 0;
 
-(function initializeApp() {
-	pageWidth = window.innerWidth;
-	pageHeight = window.innerHeight;
-	screenHeight = screen.height;
-	screenWidth = screen.width;
-	app = new PIXI.Application(pageWidth, pageHeight, {backgroundColor: 0x1099bb, antialias: true});
-	document.body.appendChild(app.view);
-	app.stage.interactive = true;
-	canvas = document.querySelector('canvas');
-	clipboardBar = document.querySelector('#bar');
-
-	setInterval(function () {
-		setData(fps,touchesCount);
-	},250);
-	var int = setInterval(function () {
-		setDataToBar();
-	},1000);
-	//We use comfortable interval for display FPS
-	setInterval(renderScreenFps, 250);
-	gameLoop();
-
-
-//Implementation of touches visualization
-	document.querySelector('#stop').addEventListener('touchstart',function () {
-		clearInterval(int)
-	});
-	canvas.addEventListener('touchmove', function (event) {
-		touches = event.touches;
-		event.preventDefault();
-	});
-	canvas.addEventListener('touchend', function () {
-		touches = [];
-		color = getRandomHexColor();
-	});
-}());
-
-function setDataToBar() {
-	statistic = '';
-	for (var i = 0; i < data.length; i++) {
-		statistic += data[i] + '\n';
-	}
-	clipboardBar.innerText = statistic;
-}
-
-function setData(fps, touches) {
-	currentDate = (new Date).toTimeString();
-	currentDate = currentDate.slice(0,8);
-	logData = currentDate + '; FPS: ' + fps + '; Touches: ' + touches;
-	if (data.length < 400) {
-		data.push(logData);
-	} else {
-		data.shift();
-		data.push(logData);
-	}
-	
-	console.log(data);
-}
-
-
-//add "show full screen" text to page
-basicText = new PIXI.Text('Tap to set full screen.');
-basicText.anchor.set(0.5, 0.5);
-basicText.style = {
-	fontSize: 60,
-	fill: '#fff'
-};
-basicText.x = pageWidth / 2;
-basicText.y = pageHeight / 2;
-app.stage.addChild(basicText);
-
-//show fps on page
-
-
-//set up full screen app;
-canvas.addEventListener('touchstart', function setFullScreen(event) {
-	app.stage.removeChild(basicText);
-	// code below works with desktop browsers
-	// app.renderer.resize(screenWidth, screenHeight);
-	// var el = document.documentElement,
-	// 	rfs = el.requestFullscreen
-	// 		|| el.webkitRequestFullScreen
-	// 		|| el.mozRequestFullScreen
-	// 		|| el.msRequestFullscreen
-	// 	;
-	//
-	// rfs.call(el);
-	canvas.removeEventListener('touchstart', setFullScreen)
-});
-
-
-function getRandomHexColor() {
-	return '0x' + Math.random().toString(16).slice(2, 8).toUpperCase();
-}
-
-function renderScreenFps() {
-	app.stage.removeChild(screenFps);
-	screenFps = new PIXI.Text('FPS: ' + fps);
-	screenFps.style = {
+	//Styles
+	var textStyle = {
 		fontSize: 20,
 		fill: '#fff'
 	};
-	screenFps.x = 50;
-	screenFps.y = 50;
-	app.stage.addChild(screenFps);
-}
 
-function renderCountOfActiveTouches() {
-	touchesCount = touches.length;
-	app.stage.removeChild(screenTouchesCount);
-	screenTouchesCount = new PIXI.Text('ACTIVE TOUCHES: ' + touchesCount);
-	screenTouchesCount.style = {
-		fontSize: 20,
-		fill: '#fff'
+	//Logging data variables
+	new Clipboard('.btn');
+	var clipboardBar;
+	var log = [];
+	var statistic;
+	var currentDate;
+	var logItem;
+
+
+	function Application(renderer) {
+		this.renderer = renderer;
+		console.log(this);
+	}
+
+	Application.prototype.initialize = function () {
+		var self = this;
+		pageWidth = window.innerWidth;
+		pageHeight = window.innerHeight;
+		screenHeight = screen.height;
+		screenWidth = screen.width;
+
+		//Creation of our scene
+		app = new PIXI.Application(pageWidth, pageHeight, {
+			backgroundColor: 0x1099bb,
+			antialias: true
+		});
+		document.body.appendChild(app.view);
+
+		app.stage.interactive = true;
+
+		canvas = document.querySelector('canvas');
+		clipboardBar = document.querySelector('#bar');
+		//set up event listeners
+		canvas.addEventListener('touchstart', function (event) {
+			touches = event.touches;
+			event.preventDefault();
+		});
+		canvas.addEventListener('touchmove', function (event) {
+			touches = event.touches;
+			event.preventDefault();
+		});
+		canvas.addEventListener('touchend', function () {
+			touches = [];
+		});
+
+		//there we set intervals for displaying stats
+
+		var fpsInterval = setInterval(function () {
+			self.renderer.renderFps();
+		}, 500);
+		var statsInterval = setInterval(function () {
+			setData(fps, touches.length);
+		}, 250);
+		var int = setInterval(function () {
+			setDataToBar();
+		}, 1000);
+		document.querySelector('#stop').addEventListener('touchstart', function () {
+			clearInterval(int)
+		});
 	};
-	screenTouchesCount.x = 50;
-	screenTouchesCount.y = 100;
-	app.stage.addChild(screenTouchesCount);
-}
+	Application.prototype.gameLoop = function () {
+		//calculate fps
+		thisLoop = new Date();
+		fps = Math.round(1000 / (thisLoop - lastLoop));
+		lastLoop = thisLoop;
 
-function renderTouches() {
-	graphics.clear();
-	for (i = 0; i < touches.length; i++) {
-		graphics.lineStyle(0);
-		graphics.beginFill(color);
-		graphics.drawCircle(touches[i].screenX, touches[i].screenY, 30);
-		graphics.endFill();
+		self = this;
+		if (touches.length !== 0) {
+			self.renderer.renderAmountTouches();
+		}
+		self.renderer.renderTouches();
+
+		requestAnimationFrame(self.gameLoop.bind(this));
+	};
+
+
+	function Renderer() {
+		graphics = new PIXI.Graphics();
+
+	}
+
+	Renderer.prototype.initialize = function () {
 		app.stage.addChild(graphics);
+		//adding fps to screen
+		fpsOnScreen = new PIXI.Text('FPS: ');
+		fpsOnScreen.style = textStyle;
+		fpsOnScreen.x = 50;
+		fpsOnScreen.y = 50;
+		app.stage.addChild(fpsOnScreen);
+		//adding touches to screen
+		amountOfTouchesOnScreen = new PIXI.Text('Touches: ');
+		amountOfTouchesOnScreen.style = textStyle;
+		amountOfTouchesOnScreen.x = 50;
+		amountOfTouchesOnScreen.y = 100;
+		app.stage.addChild(amountOfTouchesOnScreen);
+	};
+
+	Renderer.prototype.renderTouches = function () {
+		graphics.clear();
+		for (i = 0; i < touches.length; i++) {
+			console.log(touches[i]);
+			graphics.lineStyle(0);
+			graphics.beginFill(color);
+			graphics.drawCircle(touches[i].screenX, touches[i].screenY, 30);
+			graphics.endFill();
+
+		}
+	};
+
+	Renderer.prototype.renderFps = function () {
+		fpsOnScreen.text = 'FPS: ' + fps;
+	};
+
+	Renderer.prototype.renderAmountTouches = function () {
+		amountOfTouchesOnScreen.text = 'Touches: ' + touches.length;
+	};
+
+	function setDataToBar() {
+		statistic = '';
+		for (j = 0; i < log.length; i++) {
+			statistic += log[i] + '\n';
+		}
+		clipboardBar.innerText = statistic;
 	}
-}
+
+	function setData(fps, touches) {
+		currentDate = (new Date).toTimeString();
+		currentDate = currentDate.slice(0, 8);
+		logItem = currentDate + '; FPS: ' + fps + '; Touches: ' + touches;
+		console.log(logItem);
+		if (log.length < 400) {
+			log.push(logItem);
+		} else {
+			log.shift();
+			log.push(logItem);
+		}
+	}
 
 
-function gameLoop() {
-	//there we count fps
-	thisLoop = new Date();
-	fps = Math.round(1000 / (thisLoop - lastLoop));
-	lastLoop = thisLoop;
-	renderTouches();
-	renderCountOfActiveTouches();
-	requestAnimationFrame(gameLoop);
-}
+	var renderer = new Renderer();
+	var application = new Application(renderer);
 
+	application.initialize();
+	renderer.initialize();
+	application.gameLoop();
+}());
 
 
 
