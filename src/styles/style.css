@@ -1,3 +1,23 @@
 body {
     overflow: hidden;
 }
+
+body .btn {
+    position: absolute;
+    left: 50px;
+    top: 560px;
+}
+
+
+body #stop {
+    position: absolute;
+    left: 50px;
+    top: 590px;
+}
+body #bar{
+    position: absolute;
+    width: 200px;
+    height: 400px;
+    left: 50px;
+    top: 150px;
+}

@@ -10,5 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "pixi.js": "^4.3.4"
+  },
+  "devDependencies": {
+    "clipboard": "^1.5.16"
   }
 }
