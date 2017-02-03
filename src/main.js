@@ -35,7 +35,7 @@
 	new Clipboard('.btn');
 	var clipboardBar;
 	var log = [];
-	var statistic;
+	var statistic = '';
 	var currentDate;
 	var logItem;
 
@@ -99,9 +99,12 @@
 
 		self = this;
 		if (touches.length !== 0) {
-			self.renderer.renderAmountTouches();
+			self.renderer.renderTouches();
+		} else {
+			graphics.clear();
 		}
-		self.renderer.renderTouches();
+		self.renderer.renderAmountTouches();
+
 
 		requestAnimationFrame(self.gameLoop.bind(this));
 	};
@@ -131,7 +134,6 @@
 	Renderer.prototype.renderTouches = function () {
 		graphics.clear();
 		for (i = 0; i < touches.length; i++) {
-			console.log(touches[i]);
 			graphics.lineStyle(0);
 			graphics.beginFill(color);
 			graphics.drawCircle(touches[i].screenX, touches[i].screenY, 30);
@@ -149,10 +151,10 @@
 	};
 
 	function setDataToBar() {
-		statistic = '';
 		for (j = 0; i < log.length; i++) {
 			statistic += log[i] + '\n';
 		}
+		console.log(statistic);
 		clipboardBar.innerText = statistic;
 	}
 
@@ -160,7 +162,6 @@
 		currentDate = (new Date).toTimeString();
 		currentDate = currentDate.slice(0, 8);
 		logItem = currentDate + '; FPS: ' + fps + '; Touches: ' + touches;
-		console.log(logItem);
 		if (log.length < 400) {
 			log.push(logItem);
 		} else {
